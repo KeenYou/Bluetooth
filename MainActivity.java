@@ -1,5 +1,7 @@
 package edu.purdue.you54.testbluetooth;
 
+        import android.content.BroadcastReceiver;
+        import android.content.Context;
         import android.support.v7.app.AppCompatActivity;
         import android.os.Bundle;
 
@@ -25,48 +27,66 @@ package edu.purdue.you54.testbluetooth;
 public class MainActivity extends Activity {
 
     private Button On,Off,Visible,list, search, test;
-    private BluetoothAdapter BA;
+    private BluetoothAdapter bluetoothAdapter;
     private Set<BluetoothDevice>pairedDevices;
     private ListView lv;
+
+    public ArrayList<String> foundDevices = new ArrayList<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        /*
         On = (Button)findViewById(R.id.button1);
         Off = (Button)findViewById(R.id.button2);
         Visible = (Button)findViewById(R.id.button3);
         list = (Button)findViewById(R.id.button4);
         search = (Button)findViewById(R.id.button5);
         test = (Button)findViewById(R.id.button6);
-
+*/
         lv = (ListView)findViewById(R.id.listView1);
 
-        BA = BluetoothAdapter.getDefaultAdapter();
-        if(BA == null){
-            Toast.makeText(this, "Blurtooth not supported", Toast.LENGTH_SHORT).show();
+        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+        if(bluetoothAdapter == null){
+            Toast.makeText(this, "Bluetooth not supported", Toast.LENGTH_SHORT).show();
         }
+        //automatically turn on bluetooth
+        if(!bluetoothAdapter.isEnabled()){
+            Intent  turnOn = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(turnOn,0);
+            Toast.makeText(getApplicationContext(), "Bluetooth not on, Turned On", Toast.LENGTH_LONG).show();
+        }
+        /*
         else{
-            if(!BA.isDiscovering()){
-                BA.startDiscovery();
-            }
+            Toast.makeText(getApplicationContext(), "Bluetooth already on", Toast.LENGTH_LONG).show();
         }
+        */
+
+        String test = "" + bluetoothAdapter.isDiscovering();
+        Toast.makeText(getApplicationContext(),test, Toast.LENGTH_LONG).show();
+
+        if(!bluetoothAdapter.isDiscovering()){
+            bluetoothAdapter.startDiscovery();
+            Toast.makeText(getApplicationContext(), "does not discover automatically but I made it do", Toast.LENGTH_LONG).show();
+        }
+
+        for(int i = 1; i <= 10; i++){
+            foundDevices.add("Bluetooth" + i);
+        }
+
+
+        final ArrayAdapter adapter = new ArrayAdapter(this,android.R.layout.simple_list_item_1, foundDevices);
+        lv.setAdapter(adapter);
     }
 
-    public void on(View view){
-        if (!BA.isEnabled()) {
-            Intent turnOn = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(turnOn, 0);
-            Toast.makeText(getApplicationContext(),"Turned on"
-                    ,Toast.LENGTH_LONG).show();
-        }
-        else{
-            Toast.makeText(getApplicationContext(),"Already on",
-                    Toast.LENGTH_LONG).show();
-        }
-    }
+
+
+
     public void list(View view){
-        pairedDevices = BA.getBondedDevices();
+        pairedDevices = bluetoothAdapter.getBondedDevices();
 
         ArrayList list = new ArrayList();
         for(BluetoothDevice bt : pairedDevices)
@@ -80,7 +100,7 @@ public class MainActivity extends Activity {
 
     }
     public void off(View view){
-        BA.disable();
+        bluetoothAdapter.disable();
         Toast.makeText(getApplicationContext(),"Turned off" ,
                 Toast.LENGTH_LONG).show();
     }
@@ -109,3 +129,6 @@ public class MainActivity extends Activity {
     }
 
 }
+
+
+
